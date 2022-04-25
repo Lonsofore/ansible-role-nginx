@@ -34,7 +34,7 @@
   template:
     src: "{{ item.value.template | default(nginx_default_site_template) }}"
     dest: "{{ nginx_conf_dir }}/sites-available/{{ item.key }}.conf"
-  with_dict: "{{ nginx_sites }}"
+  with_dict: "{{ nginx_sites | combine(nginx_sites_additional, recursive=True, list_merge='append') }}"
   when: item.key not in nginx_remove_sites
   notify:
     - reload nginx
@@ -44,7 +44,7 @@
     state: link
     src: "{{ nginx_conf_dir }}/sites-available/{{ item.key }}.conf"
     dest: "{{ nginx_conf_dir }}/sites-enabled/{{ item.key }}.conf"
-  with_dict: "{{ nginx_sites }}"
+  with_dict: "{{ nginx_sites | combine(nginx_sites_additional, recursive=True, list_merge='append') }}"
   when: (item.key not in nginx_remove_sites) and (item.key not in nginx_disabled_sites)
   ignore_errors: "{{ ansible_check_mode }}"
   notify:
@@ -54,7 +54,7 @@
   template:
     src: "{{ item.value.template | default('config.conf.j2') }}"
     dest: "{{ nginx_conf_dir }}/conf.d/{{ item.key }}.conf"
-  with_dict: "{{ nginx_configs }}"
+  with_dict: "{{ nginx_configs | combine(nginx_configs_additional, recursive=True, list_merge='append') }}"
   notify:
     - reload nginx
 
@@ -62,7 +62,7 @@
   template:
     src: config.conf.j2
     dest: "{{ nginx_conf_dir }}/snippets/{{ item.key }}.conf"
-  with_dict: "{{ nginx_snippets }}"
+  with_dict: "{{ nginx_snippets | combine(nginx_snippets_additional, recursive=True, list_merge='append') }}"
   notify:
     - reload nginx
 
@@ -70,7 +70,7 @@
   template:
     src: "{{ item.value.template | default('config_stream.conf.j2') }}"
     dest: "{{ nginx_conf_dir }}/conf.d/stream/{{ item.key }}.conf"
-  with_dict: "{{ nginx_stream_configs }}"
+  with_dict: "{{ nginx_stream_configs | combine(nginx_stream_configs_additional, recursive=True, list_merge='append') }}"
   notify:
     - reload nginx
   when: nginx_stream_params or nginx_stream_configs
