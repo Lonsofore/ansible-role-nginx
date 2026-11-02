@@ -2,6 +2,8 @@
 nginx_pkgs:
   - nginx
 
+nginx_package_state: present
+
 nginx_install_epel_repo: True
 
 nginx_official_repo: False
